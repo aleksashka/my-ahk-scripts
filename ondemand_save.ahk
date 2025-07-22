@@ -125,8 +125,7 @@ if (Var = "") {
 }
 
 StopScript := 0
-;Sending TM signal in %DelayS_05S% second(s)
-text := "Got signal back! Saving in " . DelayS_01S . " + 2 second(s)"
+text := "Sending TM signal in " . DelayS_01S . " + 2 second(s)"
 MsgBox, , %pages_left_text%, %text%, %DelayS_01S%
 Loop
 {
