@@ -65,7 +65,7 @@ WaitUntilFolderSizeStable(Title, Prefix := "", CheckInterval := 5, StableDuratio
     return totalSize  ; Return the final size if needed
 }
 
-WaitForSignal(FileName, Title, Timeout := 60)
+WaitForSignal(FileName, Title, Timeout := 180)
 {
     global DownloadFolder
     SignalFile := DownloadFolder . "\" . FileName
