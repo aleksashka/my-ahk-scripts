@@ -20,8 +20,44 @@ DelayS_05M := DelayS_01M * 5
 DelayS_10M := DelayS_01M * 10
 
 DelayAfterDone := DelayS_05S
-DelayAfterSave := DelayS_05S * 3
 DelayAfterNext := DelayS_05S * 2
+
+WaitUntilFolderSizeStable(Title, Prefix := "", CheckInterval := 2, StableDuration := 10)
+{
+    lastSize := -1
+    stableTime := 0
+    global DownloadFolder
+
+    Loop
+    {
+        totalSize := 0
+        Loop, Files, %DownloadFolder%\%Prefix%*, FDR
+        {
+            totalSize += A_LoopFileSize
+        }
+
+        ; Compare to previous size
+        if (totalSize = lastSize)
+        {
+            stableTime += CheckInterval
+        }
+        else
+        {
+            stableTime := 0
+            lastSize := totalSize
+        }
+
+        ; Stop if size is stable long enough
+        if (stableTime >= StableDuration)
+            break
+
+        text := "Waiting for stable size`n" . totalSize
+        text .= " (" . stableTime . " of " . StableDuration . " s)"
+        MsgBox, , %Title%, %text%, %CheckInterval%
+    }
+
+    return totalSize  ; Return the final size if needed
+}
 
 WaitForSignal(FileName, Title, Timeout := 60)
 {
@@ -106,8 +142,7 @@ Loop
             MsgBox, Done on LastPageToSave
             return
         }
-        text := "Waiting after ""Save"" for  " . DelayAfterSave . " + 2 second(s)"
-        MsgBox, , %pages_left_text%, %text%, %DelayAfterSave%
+        WaitUntilFolderSizeStable(pages_left_text, Prefix)
         Sleep, 2000
         Send {Right}
         text := "Waiting after ""Next"" for  " . DelayAfterNext . " + 2 second(s)"
