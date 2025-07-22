@@ -162,7 +162,8 @@ Loop
         WaitUntilFolderSizeStable(pages_left_text, Prefix)
         Sleep, 2000
         Send {Right}
-        text := "Waiting after ""Next"" for  " . DelayAfterNext . " + 2 second(s)"
+        text := "Waiting after ""Next"" and sending TM a signal in "
+        text .= DelayAfterNext . " + 2 second(s)"
         MsgBox, , %pages_left_text%, %text%, %DelayAfterNext%
     }
     else
