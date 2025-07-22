@@ -28,17 +28,34 @@ DelayS_10M := DelayS_01M * 10
 DelayAfterDone := DelayS_05S
 DelayAfterNext := DelayS_05S * 2
 
+FormatNumberWithCommas(n) {
+    str := ""
+    n := RegExReplace(n, "[^\d]")  ; Strip non-digits
+    Loop
+    {
+        if (StrLen(n) <= 3)
+        {
+            str := n . (str != "" ? "," . str : "")
+            break
+        }
+        str := SubStr(n, -2) . (str != "" ? "," . str : "")
+        n := SubStr(n, 1, -3)
+    }
+    return str
+}
+
 WaitUntilFolderSizeStable(Title, Prefix := "", CheckInterval := 5, StableDuration := 15)
 {
-    lastSize := -1
+    lastSize := 0
     stableTime := 0
     global DownloadFolder
     pattern := DownloadFolder . "\" . Prefix . "*_files"
 
     Loop
     {
-        text := "Waiting for stable size of " . Prefix . "*_files`n"
-        text .= lastSize . " (" . stableTime . " of " . StableDuration . " s)`n"
+        formattedLastSize := FormatNumberWithCommas(lastSize)
+        text := "Waiting for the stable non-zero size of " . Prefix . "*_files`n"
+        text .= formattedLastSize . " (" . stableTime . " of " . StableDuration . " s)`n"
         MsgBox, , %Title%, %text%, %CheckInterval%
 
         totalSize := 0
