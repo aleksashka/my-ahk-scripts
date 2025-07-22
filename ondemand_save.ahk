@@ -28,7 +28,7 @@ DelayS_10M := DelayS_01M * 10
 DelayAfterDone := DelayS_05S
 DelayAfterNext := DelayS_05S * 2
 
-WaitUntilFolderSizeStable(Title, Prefix := "", CheckInterval := 2, StableDuration := 10)
+WaitUntilFolderSizeStable(Title, Prefix := "", CheckInterval := 5, StableDuration := 15)
 {
     lastSize := -1
     stableTime := 0
