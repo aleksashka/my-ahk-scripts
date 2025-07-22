@@ -49,14 +49,6 @@ WaitForSignal(FileName, Title, Timeout := 60)
     }
 }
 
-Wait_and_Press_PgDn_Multiple_Times(NUM:=30, WAIT:=1000) {
-    Loop %NUM%
-    {
-        Sleep, WAIT
-        Send {PgDn}
-    }
-}
-
 Chrome_Save_Page_with_Prefix(PREFIX, WAIT:=1000) {
     SendInput ^s
     Sleep, WAIT
