@@ -33,13 +33,29 @@ WaitUntilFolderSizeStable(Title, Prefix := "", CheckInterval := 5, StableDuratio
     lastSize := -1
     stableTime := 0
     global DownloadFolder
+    pattern := DownloadFolder . "\" . Prefix . "*_files"
 
     Loop
     {
+        text := "Waiting for stable size of " . Prefix . "*_files`n"
+        text .= lastSize . " (" . stableTime . " of " . StableDuration . " s)`n"
+        MsgBox, , %Title%, %text%, %CheckInterval%
+
         totalSize := 0
-        Loop, Files, %DownloadFolder%\%Prefix%*, FDR
+        Loop, Files, %pattern%, D  ; D = directories only
         {
-            totalSize += A_LoopFileSize
+            folderPath := A_LoopFileFullPath
+            Loop, Files, %folderPath%\*.*, FR
+            {
+                totalSize += A_LoopFileSize
+            }
+        }
+        ;MsgBox, % "Total size of " . pattern . " is " . totalSize . " bytes"
+
+        ; Work only on positive
+        if (totalSize = 0)
+        {
+            continue
         }
 
         ; Compare to previous size
@@ -56,10 +72,6 @@ WaitUntilFolderSizeStable(Title, Prefix := "", CheckInterval := 5, StableDuratio
         ; Stop if size is stable long enough
         if (stableTime >= StableDuration)
             break
-
-        text := "Waiting for stable size`n" . totalSize
-        text .= " (" . stableTime . " of " . StableDuration . " s)"
-        MsgBox, , %Title%, %text%, %CheckInterval%
     }
 
     return totalSize  ; Return the final size if needed
