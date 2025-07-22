@@ -23,18 +23,18 @@ DelayAfterDone := DelayS_05S
 DelayAfterSave := DelayS_05S * 3
 DelayAfterNext := DelayS_05S * 2
 
-WaitForSignal(FileName, CheckInterval := 500, Timeout := 10000)
+WaitForSignal(FileName, Title, Timeout := 60)
 {
     global DownloadFolder
     SignalFile := DownloadFolder . "\" . FileName
-    ;MsgBox, % SignalFile . " " . CheckInterval . " " . Timeout
+    CheckInterval := 2
     Elapsed := 0
 
     Loop
     {
-        ; TODO Wait using MsgBox
-        Sleep, %CheckInterval%
         Elapsed += CheckInterval
+        text := "Waiting for TM signal (" . Elapsed . " of " . Timeout . ")..."
+        MsgBox, , %Title%, %text%, %CheckInterval%
 
         if FileExist(SignalFile)
         {
@@ -91,15 +91,18 @@ if (Var = "") {
 }
 
 StopScript := 0
-MsgBox, , %pages_left_text%, Sending TM signal in %DelayS_05S% second(s), %DelayS_05S%
+;Sending TM signal in %DelayS_05S% second(s)
+text := "Got signal back! Saving in " . DelayS_01S . " + 2 second(s)"
+MsgBox, , %pages_left_text%, %text%, %DelayS_01S%
 Loop
 {
     pages_left := LastPageToSave - Current_Page
     pages_left_text := "Pages left: " . pages_left
+    Sleep, 2000
     ; Signal Tampermonkey to press buttons if any
     SendInput ^+z
     ; Wait for Tampermonkey signal file
-    if (WaitForSignal(PAGE_DONE_SIGNAL, DelayS_01S * 1000, DelayS_05M * 1000))
+    if (WaitForSignal(PAGE_DONE_SIGNAL, pages_left_text))
     {
         ; Noticed Tampermonkey signal
         ; Save the page
@@ -115,7 +118,7 @@ Loop
         MsgBox, , %pages_left_text%, %text%, %DelayAfterSave%
         Sleep, 2000
         Send {Right}
-        text := "Waiting after ""Next"" for  " . DelayAfterNext . " second(s)"
+        text := "Waiting after ""Next"" for  " . DelayAfterNext . " + 2 second(s)"
         MsgBox, , %pages_left_text%, %text%, %DelayAfterNext%
     }
     else
