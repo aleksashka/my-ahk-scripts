@@ -13,6 +13,10 @@ MsgBox,
 FileReadLine, DownloadFolder, %A_ScriptDir%\ahk_download_folder.txt, 1
 PAGE_DONE_SIGNAL := "tm_page_done.txt"
 
+sameTitleCount := 0  ; Counter to track consecutive same window title
+sameTitleMaxCount := 3  ; Stop if this number of titles is same in a row
+previousTitle := ""  ; Store the previous window title
+
 SignalFile := DownloadFolder . "\" . PAGE_DONE_SIGNAL
 if FileExist(SignalFile)
 {
@@ -156,8 +160,25 @@ if (Var = "") {
 StopScript := 0
 text := "Sending TM signal in " . DelayS_01S . " + 2 second(s)"
 MsgBox, , %pages_left_text%, %text%, %DelayS_01S%
+
+stopReasonMsg := "Done on StopScript = 1"
 Loop
 {
+    WinGetTitle, currentTitle, A  ; Get the current active window title
+    if (currentTitle = previousTitle)
+    {
+        sameTitleCount++  ; Increment count if title is the same
+    }
+    else
+    {
+        sameTitleCount := 0  ; Reset count if window title changes
+    }
+    if (sameTitleCount >= sameTitleMaxCount)
+    {
+        stopReasonMsg := "Stop on same number of titles: " . sameTitleMaxCount
+        break
+    }
+    previousTitle := currentTitle  ; Save current title
     pages_left := LastPageToSave - Current_Page
     pages_left_text := "Pages left: " . pages_left
     Sleep, 2000
@@ -173,8 +194,8 @@ Loop
         Prefix := Format("{:04}", Current_Page) . "_"
         Chrome_Save_Page_with_Prefix(Prefix)
         if (++Current_Page >= LastPageToSave) {
-            MsgBox, Done on LastPageToSave
-            return
+            stopReasonMsg := "Done on LastPageToSave"
+            break
         }
         WaitUntilFolderSizeStable(pages_left_text, Prefix)
         Sleep, 2000
@@ -185,11 +206,12 @@ Loop
     }
     else
     {
-        MsgBox, Timed out waiting for signal.
+        stopReasonMsg := "Timed out waiting for signal!"
+        break
     }
 } Until StopScript = 1
 
-MsgBox, Done on StopScript = 1
+MsgBox, %stopReasonMsg%
 return
 
 
