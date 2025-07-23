@@ -32,6 +32,22 @@ DelayS_10M := DelayS_01M * 10
 DelayAfterDone := DelayS_05S
 DelayAfterNext := DelayS_05S * 2
 
+tooManySameTitles() {
+    global sameTitleCount, sameTitleMaxCount, previousTitle
+
+    WinGetTitle, currentTitle, A  ; Get the current active window title
+    if (currentTitle = previousTitle)
+    {
+        sameTitleCount++  ; Increment count if title is the same
+    }
+    else
+    {
+        sameTitleCount := 0  ; Reset count if window title changes
+    }
+    previousTitle := currentTitle  ; Save current title
+
+    return sameTitleCount >= sameTitleMaxCount
+}
 FormatNumberWithCommas(n) {
     str := ""
     n := RegExReplace(n, "[^\d]")  ; Strip non-digits
@@ -164,21 +180,11 @@ MsgBox, , %pages_left_text%, %text%, %DelayS_01S%
 stopReasonMsg := "Done on StopScript = 1"
 Loop
 {
-    WinGetTitle, currentTitle, A  ; Get the current active window title
-    if (currentTitle = previousTitle)
-    {
-        sameTitleCount++  ; Increment count if title is the same
-    }
-    else
-    {
-        sameTitleCount := 0  ; Reset count if window title changes
-    }
-    if (sameTitleCount >= sameTitleMaxCount)
+    if (tooManySameTitles())
     {
         stopReasonMsg := "Stop on same number of titles: " . sameTitleMaxCount
         break
     }
-    previousTitle := currentTitle  ; Save current title
     pages_left := LastPageToSave - Current_Page
     pages_left_text := "Pages left: " . pages_left
     Sleep, 2000
