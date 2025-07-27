@@ -64,54 +64,22 @@ FormatNumberWithCommas(n) {
     return str
 }
 
-WaitUntilFolderSizeStable(Title, Prefix := "", CheckInterval := 5, StableDuration := 15)
-{
-    lastSize := 0
-    stableTime := 0
+WaitForFile(Title, Prefix, Suffix:= "*.html", TimeoutSec:=900, CheckInterval:=5) {
     global DownloadFolder
-    pattern := DownloadFolder . "\" . Prefix . "*_files"
+    pattern := DownloadFolder . "\" . Prefix . Suffix
+    elapsed := 0
 
-    Loop
-    {
-        formattedLastSize := FormatNumberWithCommas(lastSize)
-        text := "Waiting for the stable non-zero size of " . Prefix . "*_files`n"
-        text .= formattedLastSize . " (" . stableTime . " of " . StableDuration . " s)`n"
+    Loop {
+        If FileExist(pattern)
+            return true
+        text := "Waiting for the " . Prefix . Suffix . " to appear in`n"
+        text .= DownloadFolder . "`n"
+        text .= "Elapsed " . elapsed . " of " . TimeoutSec . " second(s)"
         MsgBox, , %Title%, %text%, %CheckInterval%
-
-        totalSize := 0
-        Loop, Files, %pattern%, D  ; D = directories only
-        {
-            folderPath := A_LoopFileFullPath
-            Loop, Files, %folderPath%\*.*, FR
-            {
-                totalSize += A_LoopFileSize
-            }
-        }
-        ;MsgBox, % "Total size of " . pattern . " is " . totalSize . " bytes"
-
-        ; Work only on positive
-        if (totalSize = 0)
-        {
-            continue
-        }
-
-        ; Compare to previous size
-        if (totalSize = lastSize)
-        {
-            stableTime += CheckInterval
-        }
-        else
-        {
-            stableTime := 0
-            lastSize := totalSize
-        }
-
-        ; Stop if size is stable long enough
-        if (stableTime >= StableDuration)
-            break
+        elapsed += CheckInterval
+        if (elapsed >= TimeoutSec)
+            return false
     }
-
-    return totalSize  ; Return the final size if needed
 }
 
 WaitForSignal(FileName, Title, Timeout := 180)
@@ -203,7 +171,10 @@ Loop
             stopReasonMsg := "Done on LastPageToSave"
             break
         }
-        WaitUntilFolderSizeStable(pages_left_text, Prefix)
+        if (!WaitForFile(pages_left_text, Prefix, "*.htm")){
+            stopReasonMsg := "Timed out waiting for an HTML file: " . Prefix . "*.htm"
+            break
+        }
         Sleep, 2000
         Send {Right}
         text := "Waiting after ""Next"" and sending TM a signal in "
