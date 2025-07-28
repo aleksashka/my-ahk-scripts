@@ -10,16 +10,6 @@ MsgBox,
 ^+r - Reload script
 )
 
-FileReadLine, DownloadFolder, %A_ScriptDir%\ahk_download_folder.txt, 1
-PAGE_DONE_SIGNAL := "tm_page_done.txt"
-title_prefix := "Page "
-
-SignalFile := DownloadFolder . "\" . PAGE_DONE_SIGNAL
-if FileExist(SignalFile)
-{
-    FileDelete, %SignalFile%
-}
-
 DelayS_01S := 1
 DelayS_05S := 5
 DelayS_01M := 60
@@ -87,6 +77,16 @@ Save_Page_with_Prefix(PREFIX, WAIT:=1000) {
 ; Ctrl+Shift+S
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ^+s::
+FileReadLine, DownloadFolder, %A_ScriptDir%\ahk_download_folder.txt, 1
+PAGE_DONE_SIGNAL := "tm_page_done.txt"
+title_prefix := "Page "
+
+SignalFile := DownloadFolder . "\" . PAGE_DONE_SIGNAL
+if FileExist(SignalFile)
+{
+    FileDelete, %SignalFile%
+}
+
 text = Make sure FF saves as Web Page, complete`n`n
 text .= "Set download to:`n" . DownloadFolder
 MsgBox, %text%
