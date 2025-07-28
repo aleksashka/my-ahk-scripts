@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Button Clicker + AHK Signal
-// @namespace    http://example.com/
-// @version      1.1
-// @description  Clicks various buttons, then signals AHK via download
+// @name         Wait for load, click buttons, send Signal
+// @version      1.2
+// @description  Waits for page load (via paragraphs, clicks buttons and signals via download
+// @author       ChatGPT + alakinalexandr@gmail.com
 // @match        *://*/*
 // @grant        none
 // ==/UserScript==
@@ -13,6 +13,58 @@
     const BUTTON_TEXTS = ["Show Me", "Open Transcript"];
     const CLICK_DELAY_MS = 1000;
     const SIGNAL_FILE_NAME = "tm_page_done.txt";
+    let lastUrl = location.href;
+
+    // --- Monitor URL change every second ---
+    setInterval(() => {
+        const currentUrl = location.href;
+        if (currentUrl !== lastUrl) {
+            lastUrl = currentUrl;
+            console.log('TM_Load: URL changed:', currentUrl);
+            runAfterPageReady();
+        }
+    }, 1000);
+
+    // --- Wait until content paragraph appears ---
+    async function runAfterPageReady() {
+        try {
+            console.log('TM_Load: Waiting for any of known paragraphs...');
+            await waitForParagraph();
+            console.log('TM_Load: Page is ready, clicking buttons');
+            const elems = findMatchingElements();
+            clickSequentially(elems, CLICK_DELAY_MS, sendSignal);
+        } catch (err) {
+            console.warn('TM_Load:', err.message);
+        }
+    }
+
+    function waitForParagraph(timeout = 15000) {
+        const selectors = [
+            'p.content-paragraph',
+            'p.assessment-intro.mb-4'
+        ];
+
+        return new Promise((resolve, reject) => {
+            const start = Date.now();
+
+            const check = () => {
+                const el = selectors.map(sel => document.querySelector(sel)).find(Boolean);
+                if (el) {
+                    observer.disconnect();
+                    console.log(`TM_Load: Found <${el.tagName.toLowerCase()}.${el.className}>:`, el.textContent.trim().slice(0, 30) + '...');
+                    resolve(el);
+                } else if (Date.now() - start > timeout) {
+                    observer.disconnect();
+                    reject(new Error('TM_Load: Timeout waiting for a paragraph'));
+                }
+            };
+
+            const observer = new MutationObserver(check);
+            observer.observe(document.documentElement, { childList: true, subtree: true });
+
+            check();
+        });
+    }
 
     function findMatchingElements() {
         const elements = [];
@@ -40,7 +92,7 @@
 
     function clickSequentially(elems, delay, callback) {
         if (!elems.length) {
-            console.log("No matching buttons found.");
+            console.log("TM_Load: No matching buttons found.");
             callback();
             return;
         }
@@ -49,7 +101,7 @@
         const clickNext = () => {
             const el = elems[i];
             if (el) {
-                console.log(`Clicking: ${el.tagName}, text: ${el.innerText || el.value}`);
+                // console.log(`TM_Load: Clicking: ${el.tagName}, text: ${el.innerText || el.value}`);
                 el.click();
             }
             i++;
@@ -57,6 +109,7 @@
             //if (i < 5) {
                 setTimeout(clickNext, delay);
             } else {
+                console.log(`TM_Load: Clicked: ${i} elements`);
                 setTimeout(callback, delay);
             }
         };
@@ -64,7 +117,7 @@
         clickNext();
     }
 
-    function signalAHK() {
+    function sendSignal() {
         const blob = new Blob(["done"], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -74,14 +127,7 @@
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        console.log("Signal sent to AHK.");
+        console.log("TM_Load: Signal sent.");
     }
 
-    // Hotkey: Ctrl + Shift + Z
-    window.addEventListener('keydown', function (e) {
-        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'z') {
-            const elems = findMatchingElements();
-            clickSequentially(elems, CLICK_DELAY_MS, signalAHK);
-        }
-    });
 })();

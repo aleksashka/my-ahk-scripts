@@ -16,6 +16,7 @@ PAGE_DONE_SIGNAL := "tm_page_done.txt"
 sameTitleCount := 0  ; Counter to track consecutive same window title
 sameTitleMaxCount := 3  ; Stop if this number of titles is same in a row
 previousTitle := ""  ; Store the previous window title
+title_prefix := "Page "
 
 SignalFile := DownloadFolder . "\" . PAGE_DONE_SIGNAL
 if FileExist(SignalFile)
@@ -30,7 +31,6 @@ DelayS_05M := DelayS_01M * 5
 DelayS_10M := DelayS_01M * 10
 
 DelayAfterDone := DelayS_05S
-DelayAfterNext := DelayS_05S * 2
 
 tooManySameTitles() {
     global sameTitleCount, sameTitleMaxCount, previousTitle
@@ -134,16 +134,10 @@ if (Var = "") {
     Current_Page := Var * 1
 }
 
-InputBox, Var, AHK, Pages to save:
-if (Var = "") {
-    return
-} else {
-    LastPageToSave := Var * 1 + Current_Page
-}
-
 StopScript := 0
-text := "Sending TM signal in " . DelayS_01S . " + 2 second(s)"
-MsgBox, , %pages_left_text%, %text%, %DelayS_01S%
+text := "Open next/previous page (not the needed one), then click OK below and`n"
+text .= "press < or > button to get to the needed page thus changing URL for TM to notice"
+MsgBox, , % title_prefix . Current_Page, %text%
 
 stopReasonMsg := "Done on StopScript = 1"
 Loop
@@ -153,33 +147,23 @@ Loop
         stopReasonMsg := "Stop on same number of titles: " . sameTitleMaxCount
         break
     }
-    pages_left := LastPageToSave - Current_Page
-    pages_left_text := "Pages left: " . pages_left
+    title_text := title_prefix . Current_Page
     Sleep, 2000
-    ; Signal Tampermonkey to press buttons if any
-    SendInput ^+z
     ; Wait for Tampermonkey signal file
-    if (WaitForSignal(PAGE_DONE_SIGNAL, pages_left_text))
+    if (WaitForSignal(PAGE_DONE_SIGNAL, title_text))
     {
         ; Noticed Tampermonkey signal
-        ; Save the page
-        text := "Got signal back! Saving in " . DelayAfterDone . " second(s)"
-        MsgBox, , %pages_left_text%, %text%, %DelayAfterDone%
+        text := "Got signal. Saving in " . DelayAfterDone . " second(s)"
+        MsgBox, , %title_text%, %text%, %DelayAfterDone%
         Prefix := Format("{:04}", Current_Page) . "_"
         Chrome_Save_Page_with_Prefix(Prefix)
-        if (++Current_Page >= LastPageToSave) {
-            stopReasonMsg := "Done on LastPageToSave"
-            break
-        }
-        if (!WaitForFile(pages_left_text, Prefix, "*.htm")){
+        if (!WaitForFile(title_text, Prefix, "*.htm")){
             stopReasonMsg := "Timed out waiting for an HTML file: " . Prefix . "*.htm"
             break
         }
         Sleep, 2000
         Send {Right}
-        text := "Waiting after ""Next"" and sending TM a signal in "
-        text .= DelayAfterNext . " + 2 second(s)"
-        MsgBox, , %pages_left_text%, %text%, %DelayAfterNext%
+        Current_Page++
     }
     else
     {
