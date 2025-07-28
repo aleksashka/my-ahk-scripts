@@ -22,15 +22,12 @@ DelayAfterDone := DelayS_05S
 ; Ctrl+Shift+S
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ^+s::
-FileReadLine, DownloadFolder, %A_ScriptDir%\ahk_download_folder.txt, 1
-PAGE_DONE_SIGNAL := "tm_page_done.txt"
 title_prefix := "Page "
+SIGNAL_PREFIX := "tm_page_done"
+SIGNAL_SUFFIX := ".txt"
 
-SignalFile := DownloadFolder . "\" . PAGE_DONE_SIGNAL
-if FileExist(SignalFile)
-{
-    FileDelete, %SignalFile%
-}
+FileReadLine, DownloadFolder, %A_ScriptDir%\ahk_download_folder.txt, 1
+DeleteFilesByPrefixSuffix(DownloadFolder, SIGNAL_PREFIX, "*" . SIGNAL_SUFFIX)
 
 text = Make sure FF saves as Web Page, complete`n`n
 text .= "Set download to:`n" . DownloadFolder
@@ -56,7 +53,7 @@ Loop
     title_text := title_prefix . Current_Page
     Sleep, 2000
     ; Wait for Tampermonkey signal file
-    if (!WaitForSignal(PAGE_DONE_SIGNAL, title_text))
+    if (!WaitForSignal(SIGNAL_PREFIX . SIGNAL_SUFFIX, title_text))
     {
         stopReasonMsg := "Timed out waiting for signal from TM!"
         break
@@ -148,4 +145,16 @@ Save_Page_with_Prefix(PREFIX, WAIT:=1000) {
     Sleep, WAIT
     Send {Enter}
     Sleep, WAIT * 1
+}
+
+DeleteFilesByPrefixSuffix(DownloadFolder, Prefix, Suffix:="*.txt") {
+    ; Create the search pattern
+    SearchPattern := DownloadFolder . "\" . Prefix . Suffix
+
+    ; Loop through all files in the folder that match the prefix
+    Loop, Files, %SearchPattern%
+    {
+        ; Delete the current file
+        FileDelete, %A_LoopFileFullPath%
+    }
 }
