@@ -127,26 +127,23 @@ Loop
     title_text := title_prefix . Current_Page
     Sleep, 2000
     ; Wait for Tampermonkey signal file
-    if (WaitForSignal(PAGE_DONE_SIGNAL, title_text))
+    if (!WaitForSignal(PAGE_DONE_SIGNAL, title_text))
     {
-        ; Noticed Tampermonkey signal
-        text := "Got signal. Saving in " . DelayAfterDone . " second(s)"
-        MsgBox, , %title_text%, %text%, %DelayAfterDone%
-        Prefix := Format("{:04}", Current_Page) . "_"
-        Save_Page_with_Prefix(Prefix)
-        if (!WaitForFile(title_text, Prefix, "*.htm")){
-            stopReasonMsg := "Timed out waiting for an HTML file: " . Prefix . "*.htm"
-            break
-        }
-        Sleep, 2000
-        Send {Right}
-        Current_Page++
-    }
-    else
-    {
-        stopReasonMsg := "Timed out waiting for signal!"
+        stopReasonMsg := "Timed out waiting for signal from TM!"
         break
     }
+    ; Noticed Tampermonkey signal
+    text := "Got signal. Saving in " . DelayAfterDone . " second(s)"
+    MsgBox, , %title_text%, %text%, %DelayAfterDone%
+    Prefix := Format("{:04}", Current_Page) . "_"
+    Save_Page_with_Prefix(Prefix)
+    if (!WaitForFile(title_text, Prefix, "*.htm")){
+        stopReasonMsg := "Timed out waiting for an HTML file: " . Prefix . "*.htm"
+        break
+    }
+    Sleep, 2000
+    Send {Right}
+    Current_Page++
 } Until StopScript = 1
 
 MsgBox, %stopReasonMsg%
