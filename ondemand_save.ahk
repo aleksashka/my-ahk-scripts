@@ -108,7 +108,7 @@ WaitForSignal(FileName, Title, Timeout := 180)
     }
 }
 
-Chrome_Save_Page_with_Prefix(PREFIX, WAIT:=1000) {
+Save_Page_with_Prefix(PREFIX, WAIT:=1000) {
     SendInput ^s
     Sleep, WAIT
     Send {Home}
@@ -156,7 +156,7 @@ Loop
         text := "Got signal. Saving in " . DelayAfterDone . " second(s)"
         MsgBox, , %title_text%, %text%, %DelayAfterDone%
         Prefix := Format("{:04}", Current_Page) . "_"
-        Chrome_Save_Page_with_Prefix(Prefix)
+        Save_Page_with_Prefix(Prefix)
         if (!WaitForFile(title_text, Prefix, "*.htm")){
             stopReasonMsg := "Timed out waiting for an HTML file: " . Prefix . "*.htm"
             break
