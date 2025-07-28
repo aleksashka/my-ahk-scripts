@@ -12,10 +12,6 @@ MsgBox,
 
 FileReadLine, DownloadFolder, %A_ScriptDir%\ahk_download_folder.txt, 1
 PAGE_DONE_SIGNAL := "tm_page_done.txt"
-
-sameTitleCount := 0  ; Counter to track consecutive same window title
-sameTitleMaxCount := 3  ; Stop if this number of titles is same in a row
-previousTitle := ""  ; Store the previous window title
 title_prefix := "Page "
 
 SignalFile := DownloadFolder . "\" . PAGE_DONE_SIGNAL
@@ -32,22 +28,6 @@ DelayS_10M := DelayS_01M * 10
 
 DelayAfterDone := DelayS_05S
 
-tooManySameTitles() {
-    global sameTitleCount, sameTitleMaxCount, previousTitle
-
-    WinGetTitle, currentTitle, A  ; Get the current active window title
-    if (currentTitle = previousTitle)
-    {
-        sameTitleCount++  ; Increment count if title is the same
-    }
-    else
-    {
-        sameTitleCount := 0  ; Reset count if window title changes
-    }
-    previousTitle := currentTitle  ; Save current title
-
-    return sameTitleCount >= sameTitleMaxCount
-}
 FormatNumberWithCommas(n) {
     str := ""
     n := RegExReplace(n, "[^\d]")  ; Strip non-digits
@@ -142,11 +122,6 @@ MsgBox, , % title_prefix . Current_Page, %text%
 stopReasonMsg := "Done on StopScript = 1"
 Loop
 {
-    if (tooManySameTitles())
-    {
-        stopReasonMsg := "Stop on same number of titles: " . sameTitleMaxCount
-        break
-    }
     title_text := title_prefix . Current_Page
     Sleep, 2000
     ; Wait for Tampermonkey signal file
