@@ -18,61 +18,6 @@ DelayS_10M := DelayS_01M * 10
 
 DelayAfterDone := DelayS_05S
 
-WaitForFile(Title, Prefix, Suffix:= "*.html", TimeoutSec:=900, CheckInterval:=5) {
-    global DownloadFolder
-    pattern := DownloadFolder . "\" . Prefix . Suffix
-    elapsed := 0
-
-    Loop {
-        If FileExist(pattern)
-            return true
-        text := "Waiting for the " . Prefix . Suffix . " to appear in`n`n"
-        text .= DownloadFolder . "`n`n"
-        text .= "Elapsed " . elapsed . " of " . TimeoutSec . " second(s)"
-        MsgBox, , %Title%, %text%, %CheckInterval%
-        elapsed += CheckInterval
-        if (elapsed >= TimeoutSec)
-            return false
-    }
-}
-
-WaitForSignal(FileName, Title, Timeout := 180)
-{
-    global DownloadFolder
-    SignalFile := DownloadFolder . "\" . FileName
-    CheckInterval := 2
-    Elapsed := 0
-
-    Loop
-    {
-        Elapsed += CheckInterval
-        text := "Waiting for TM signal (" . Elapsed . " of " . Timeout . ")..."
-        MsgBox, , %Title%, %text%, %CheckInterval%
-
-        if FileExist(SignalFile)
-        {
-            FileDelete, %SignalFile%
-            return true  ; Signal received
-        }
-
-        if (Elapsed >= Timeout)
-        {
-            return false  ; Timed out
-        }
-    }
-}
-
-Save_Page_with_Prefix(PREFIX, WAIT:=1000) {
-    SendInput ^s
-    Sleep, WAIT
-    Send {Home}
-    Sleep, WAIT
-    Send %PREFIX%
-    Sleep, WAIT
-    Send {Enter}
-    Sleep, WAIT * 1
-}
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Ctrl+Shift+S
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -149,3 +94,58 @@ Reload
 Sleep 1000 ; If successful, the reload will close this instance during the Sleep, so the line below will never be reached.
 MsgBox,, Oops, The script could not be reloaded
 return
+
+WaitForFile(Title, Prefix, Suffix:= "*.html", TimeoutSec:=900, CheckInterval:=5) {
+    global DownloadFolder
+    pattern := DownloadFolder . "\" . Prefix . Suffix
+    elapsed := 0
+
+    Loop {
+        If FileExist(pattern)
+            return true
+        text := "Waiting for the " . Prefix . Suffix . " to appear in`n`n"
+        text .= DownloadFolder . "`n`n"
+        text .= "Elapsed " . elapsed . " of " . TimeoutSec . " second(s)"
+        MsgBox, , %Title%, %text%, %CheckInterval%
+        elapsed += CheckInterval
+        if (elapsed >= TimeoutSec)
+            return false
+    }
+}
+
+WaitForSignal(FileName, Title, Timeout := 180)
+{
+    global DownloadFolder
+    SignalFile := DownloadFolder . "\" . FileName
+    CheckInterval := 2
+    Elapsed := 0
+
+    Loop
+    {
+        Elapsed += CheckInterval
+        text := "Waiting for TM signal (" . Elapsed . " of " . Timeout . ")..."
+        MsgBox, , %Title%, %text%, %CheckInterval%
+
+        if FileExist(SignalFile)
+        {
+            FileDelete, %SignalFile%
+            return true  ; Signal received
+        }
+
+        if (Elapsed >= Timeout)
+        {
+            return false  ; Timed out
+        }
+    }
+}
+
+Save_Page_with_Prefix(PREFIX, WAIT:=1000) {
+    SendInput ^s
+    Sleep, WAIT
+    Send {Home}
+    Sleep, WAIT
+    Send %PREFIX%
+    Sleep, WAIT
+    Send {Enter}
+    Sleep, WAIT * 1
+}
