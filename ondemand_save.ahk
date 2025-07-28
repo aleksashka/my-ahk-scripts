@@ -22,9 +22,9 @@ DelayAfterDone := DelayS_05S
 ; Ctrl+Shift+S
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ^+s::
-title_prefix := "Page "
 SIGNAL_PREFIX := "tm_page_done"
 SIGNAL_SUFFIX := ".txt"
+TITLE_PREFIX := "Page "
 
 FileReadLine, DownloadFolder, %A_ScriptDir%\ahk_download_folder.txt, 1
 DeleteFilesByPrefixSuffix(DownloadFolder, SIGNAL_PREFIX, "*" . SIGNAL_SUFFIX)
@@ -45,12 +45,12 @@ text := "1. Open next/previous page (not the needed one)`n"
 text .= "2. Click OK below`n"
 text .= "3. Press < or > arrow to get to the needed page`n"
 text .= "(thus changing URL for TM to start working)"
-MsgBox, , % title_prefix . Current_Page, %text%
+MsgBox, , % TITLE_PREFIX . Current_Page, %text%
 
 stopReasonMsg := "Done on StopScript = 1"
 Loop
 {
-    title_text := title_prefix . Current_Page
+    title_text := TITLE_PREFIX . Current_Page
     Sleep, 2000
     ; Wait for Tampermonkey signal file
     if (!WaitForSignal(SIGNAL_PREFIX . SIGNAL_SUFFIX, title_text))
