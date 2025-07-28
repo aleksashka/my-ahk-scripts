@@ -52,8 +52,8 @@ WaitForFile(Title, Prefix, Suffix:= "*.html", TimeoutSec:=900, CheckInterval:=5)
     Loop {
         If FileExist(pattern)
             return true
-        text := "Waiting for the " . Prefix . Suffix . " to appear in`n"
-        text .= DownloadFolder . "`n"
+        text := "Waiting for the " . Prefix . Suffix . " to appear in`n`n"
+        text .= DownloadFolder . "`n`n"
         text .= "Elapsed " . elapsed . " of " . TimeoutSec . " second(s)"
         MsgBox, , %Title%, %text%, %CheckInterval%
         elapsed += CheckInterval
@@ -115,8 +115,10 @@ if (Var = "") {
 }
 
 StopScript := 0
-text := "Open next/previous page (not the needed one), then click OK below and`n"
-text .= "press < or > button to get to the needed page thus changing URL for TM to notice"
+text := "1. Open next/previous page (not the needed one)`n"
+text .= "2. Click OK below`n"
+text .= "3. Press < or > arrow to get to the needed page`n"
+text .= "(thus changing URL for TM to start working)"
 MsgBox, , % title_prefix . Current_Page, %text%
 
 stopReasonMsg := "Done on StopScript = 1"
