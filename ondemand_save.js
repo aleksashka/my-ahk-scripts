@@ -40,6 +40,7 @@
 
     function waitForParagraph(timeout = 15000) {
         const selectors = [
+            'div.sm\\:flex.items-start',
             'p.content-paragraph',
             'p.assessment-intro.mb-4'
         ];
