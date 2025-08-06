@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wait for load, click buttons, send Signal
-// @version      1.2
+// @version      1.2.1
 // @description  Waits for page load (via paragraphs, clicks buttons and signals via download
 // @author       ChatGPT + alakinalexandr@gmail.com
 // @match        *://*/*
@@ -41,6 +41,7 @@
     function waitForParagraph(timeout = 15000) {
         const selectors = [
             'div.sm\\:flex.items-start',
+            'div.video-js',
             'p.content-paragraph',
             'p.assessment-intro.mb-4'
         ];
